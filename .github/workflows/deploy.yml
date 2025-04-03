@@ -1,0 +1,49 @@
+name: Deploy al Servidor Ubuntu 
+ 
+on: 
+  push: 
+    branches: ["main"]   # Se ejecuta en pushes a main 
+ 
+jobs: 
+  deploy: 
+    runs-on: ubuntu-latest 
+ 
+    steps: 
+      # 1. Checkout del código del repositorio 
+      - name: Checkout code 
+        uses: actions/checkout@v3 
+ 
+      # 2. Paso opcional: Agregar host SSH a known_hosts (para evitar confirmación de 
+autenticidad) 
+      - name: Configure known_hosts 
+        run: | 
+          mkdir -p ~/.ssh 
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts 
+        env: 
+          SSH_HOST: ${{ secrets.SSH_HOST }} 
+ 
+      # 3. Backup de la versión previa (si existe) en el servidor 
+      - name: Backup versi\u00f3n anterior 
+        uses: appleboy/ssh-action@v1.1.0 
+        with: 
+          host: ${{ secrets.SSH_HOST }} 
+          username: ${{ secrets.SSH_USER }} 
+          key: ${{ secrets.SSH_PRIVATE_KEY }} 
+          port: ${{ secrets.SSH_PORT || 22 }} 
+          script: | 
+            if [ -d "/var/www/html/mandanga" ]; then 
+              TIMESTAMP=$(date +"%Y%m%d-%H%M%S") 
+              mv "/var/www/html/mandanga" "/var/www/html/mandanga_$TIMESTAMP" 
+            fi 
+            mkdir -p "/var/www/html/mandanga" 
+ 
+      # 4. Desplegar nuevos archivos via SCP 
+      - name: Copiar nuevos archivos via SCP 
+        uses: appleboy/scp-action@v0.1.7 
+        with: 
+          host: ${{ secrets.SSH_HOST }} 
+          username: ${{ secrets.SSH_USER }} 
+          key: ${{ secrets.SSH_PRIVATE_KEY }} 
+          port: ${{ secrets.SSH_PORT || 22 }} 
+          source: "mandanga/*" 
+          target: "/var/www/html/mandanga/"
