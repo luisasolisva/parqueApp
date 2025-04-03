@@ -30,11 +30,11 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }} 
           port: ${{ secrets.SSH_PORT || 22 }} 
           script: | 
-            if [ -d "/var/www/html/mandanga" ]; then 
+            if [ -d "/var/www/html/parqueapp" ]; then 
               TIMESTAMP=$(date +"%Y%m%d-%H%M%S") 
-              mv "/var/www/html/mandanga" "/var/www/html/mandanga_$TIMESTAMP" 
+              mv "/var/www/html/parqueapp" "/var/www/html/parqueapp_$TIMESTAMP" 
             fi 
-            mkdir -p "/var/www/html/mandanga" 
+            mkdir -p "/var/www/html/parqueapp" 
  
       # 4. Desplegar nuevos archivos via SCP 
       - name: Copiar nuevos archivos via SCP 
@@ -44,5 +44,5 @@ jobs:
           username: ${{ secrets.SSH_USER }} 
           key: ${{ secrets.SSH_PRIVATE_KEY }} 
           port: ${{ secrets.SSH_PORT || 22 }} 
-          source: "mandanga/*" 
-          target: "/var/www/html/mandanga/"
+          source: "parqueapp/*" 
+          target: "/var/www/html/parqueapp/"
